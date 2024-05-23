@@ -1,0 +1,51 @@
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #view-buses-btn{
+            height: 50px;
+            width:90px;
+            border-radius: 6px;
+            background-color: #218838;
+            color: #f4f4f4;
+            border-width: 2px;
+        }
+
+        #bu{
+            height: 35px;
+            margin-left: 130px;
+            margin-bottom: 20px;
+            color: #f4f4f4;
+            background-color: #218838;
+            border-radius: 3px;
+        }
+
+        #buses-list{
+            margin-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 80%;
+        }
+
+        .bus-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        
+
+        
+
+

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <div class="header">GO BUS.... </div>
+    <h1>Hey Welcome Again !</h1>
+    
+    <form id="login-form">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <button type="submit">Login</button>
+        
+        <p>Don't have an account?</p>
+        <button id="register" type="button">Register</button>
+    </form>
+
+    <script>
+
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            fetch('http://localhost:8081/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    alert('Login successful');
+                    
+                    window.location.href = 'index.html';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('register').addEventListener('click', function() {
+            window.location.href = 'register.html';
+        });
+    </script>
+</body>
+</html>

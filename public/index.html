@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Booking App</title>
+    <link rel="stylesheet" href="style2.css">
+</head>
+<body>
+    <h1>Bus Booking App</h1>
+    
+    <button id="view-buses-btn" >View Buses</button>    
+    <div id="buses-list"></div>
+
+    <script>
+
+    document.getElementById('view-buses-btn').addEventListener('click', function() {
+        this.style.visibility = 'hidden';
+    });
+        
+        function bookBus(number) {
+        console.log('Booking bus number:', number);
+        fetch(`http://localhost:8081/book/${number}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ bus_number: number })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Booking successful:', data);
+        document.getElementById('view-buses-btn').click(); // Refresh the bus list
+        window.location.href = 'index.html'
+    })
+    .catch(error => console.error('Error booking bus:', error));
+}
+
+        
+document.getElementById('view-buses-btn').addEventListener('click', function() {
+            fetch('http://localhost:8081/buses')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(buses => {
+                    const busesList = document.getElementById('buses-list');
+                    busesList.innerHTML = ''; 
+                    
+                    buses.forEach(bus => {
+                        const busDiv = document.createElement('div');
+                        busDiv.classList.add('bus-card');
+                        busDiv.innerHTML = `
+                            <h2>Bus Number: ${bus.bus_number}</h2>
+                            <p>Origin: ${bus.origin}</p>
+                            <p>Destination: ${bus.destination}</p>
+                            <p>Departure Date: ${bus.departure_date}</p>
+                            <p>Departure Time: ${bus.departure_time}</p>
+                            <p>Available Seats: ${bus.available_seats}</p>
+                            <button id="bu" onclick="bookBus('${bus.bus_number}')">Book</button>
+                            <hr>
+                        `;
+                        busesList.appendChild(busDiv);
+                    });
+                })
+                .catch(error => console.error('Error fetching buses:', error));
+        });
+    </script>
+</body>
+</html>
