@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Bus Seat</title>
+    <style>
+        .seat {
+            width: 30px;
+            height: 30px;
+            background-color: green;
+            margin: 5px;
+            display: inline-block;
+            cursor: pointer;
+        }
+        .selected {
+            background-color: blue;
+        }
+        .booked {
+            background-color: red;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Select Your Seat</h1>
+    <div id="seatsContainer"></div>
+    <button onclick="bookSeats()">Book Seats</button>
+
+    <script>
+        const seatsContainer = document.getElementById('seatsContainer');
+        const urlParams = new URLSearchParams(window.location.search);
+        const busNumber = urlParams.get('bus_number');
+
+        function loadSeats() {
+            fetch(`http://localhost:8081/seats/${busNumber}`)
+                .then(response => response.json())
+                .then(bookedSeats => {
+                    seatsContainer.innerHTML = '';
+                    for (let i = 1; i <= 60; i++) {
+                        const seat = document.createElement('div');
+                        seat.classList.add('seat');
+                        seat.textContent = i;
+                        if (bookedSeats.includes(i)) {
+                            seat.classList.add('booked');
+                        } else {
+                            seat.addEventListener('click', () => {
+                                seat.classList.toggle('selected');
+                            });
+                        }
+                        seatsContainer.appendChild(seat);
+                    }
+                })
+                .catch(error => console.error('Error loading seats:', error));
+        }
+
+        function bookSeats() {
+            const selectedSeats = document.querySelectorAll('.seat.selected');
+            const seats = Array.from(selectedSeats).map(seat => parseInt(seat.textContent));
+            if (seats.length === 0) {
+                alert('No seats selected');
+                return;
+            }
+            fetch(`http://localhost:8081/book/${busNumber}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ seats })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error booking seats: ' + data.error);
+                } else {
+                    alert('Seats booked successfully');
+                    loadSeats(); // Reload seats to reflect the booked ones
+                    window.location.href = 'index.html';
+                }
+            })
+            .catch(error => console.error('Error booking seats:', error));
+        }
+
+        loadSeats();
+    </script>
+</body>
+</html>

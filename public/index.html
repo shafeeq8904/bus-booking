@@ -18,28 +18,11 @@
         this.style.visibility = 'hidden';
     });
         
-        function bookBus(number) {
-        console.log('Booking bus number:', number);
-        fetch(`http://localhost:8081/book/${number}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ bus_number: number })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+        
+    function bookBus(number) {
+            console.log('Booking bus number:', number);
+            window.open(`http://localhost:8081/book?bus_number=${number}`, '_blank');
         }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Booking successful:', data);
-        document.getElementById('view-buses-btn').click(); // Refresh the bus list
-        window.location.href = 'index.html'
-    })
-    .catch(error => console.error('Error booking bus:', error));
-}
 
         
 document.getElementById('view-buses-btn').addEventListener('click', function() {

@@ -42,36 +42,53 @@ app.get('/', (req, res) => {
 });
 
 
+app.get('/seats/:bus_number', (req, res) => {
+    const busNumber = req.params.bus_number;
+    const query = 'SELECT seat_number FROM bookings WHERE bus_number = ? AND is_booked = TRUE';
+    connection.query(query, [busNumber], (error, results) => {
+        if (error) {
+            console.error('Error fetching booked seats:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        res.json(results.map(row => row.seat_number));
+    });
+});
+
 
 app.post('/book/:bus_number', (req, res) => {
     const busNumber = req.params.bus_number;
+    const seats = req.body.seats;
 
-    connection.query('SELECT * FROM buses WHERE bus_number = ?', [busNumber], (error, results) => {
-        if (error) {
-            console.error('Error fetching bus:', error);
-            return res.status(500).json({ error: 'Internal server error' });
-        }
+    if (!seats || seats.length === 0) {
+        return res.status(400).json({ error: 'No seats selected' });
+    }
 
-        if (results.length === 0) {
-            return res.status(404).json({ error: 'Bus not found' });
-        }
-
-        const bus = results[0];
-
-        if (bus.available_seats > 0) {
-            const newAvailableSeats = bus.available_seats - 1;
-            console.log(newAvailableSeats, busNumber)
-            connection.query('UPDATE buses SET available_seats = ? WHERE bus_number = ?', [newAvailableSeats, busNumber], (error, updateResults) => {
+    const bookingQueries = seats.map(seat => {
+        return new Promise((resolve, reject) => {
+            connection.query('INSERT INTO bookings (bus_number, seat_number, is_booked) VALUES (?, ?, TRUE) ON DUPLICATE KEY UPDATE is_booked = TRUE', [busNumber, seat], (error, results) => {
                 if (error) {
-                    console.error('Error updating bus:', error);
+                    return reject(error);
+                }
+                resolve(results);
+            });
+        });
+    });
+
+    Promise.all(bookingQueries)
+        .then(() => {
+            // Update the number of available seats
+            connection.query('UPDATE buses SET available_seats = available_seats - ? WHERE bus_number = ?', [seats.length, busNumber], (error, results) => {
+                if (error) {
+                    console.error('Error updating available seats:', error);
                     return res.status(500).json({ error: 'Internal server error' });
                 }
-                res.status(200).json({ message: 'Booking successful', bus_number: busNumber, available_seats: newAvailableSeats });
+                res.status(200).json({ message: 'Booking successful' });
             });
-        } else {
-            res.status(400).json({ error: 'No available seats' });
-        }
-    });
+        })
+        .catch(error => {
+            console.error('Error booking seats:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        });
 });
 
 app.get('/buses', (req, res) => {
@@ -139,7 +156,10 @@ app.post('/login', (req, res) => {
 });
 
 
-
+app.get('/book', (req, res) => {
+    const busNumber = req.query.bus_number;
+    res.sendFile(path.join(__dirname, 'public', 'book.html'));
+});
 
 
 
